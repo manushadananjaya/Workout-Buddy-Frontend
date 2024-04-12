@@ -1,17 +1,39 @@
+/* WorkoutItem.module.css */
+
 .workout-item {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 10px;
-  }
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex; /* Use flexbox to align content */
+  justify-content: space-between; /* Space items evenly */
+}
+
+.workout-content {
+  flex-grow: 1; /* Allow content to grow within flex container */
+}
+
+.workout-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.workout-detail {
+  margin-bottom: 5px;
+}
+
+.delete-button {
+  background-color: #dc3545; /* Red color for delete button */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
   
-  .workout-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  .workout-detail {
-    margin-bottom: 5px;
-  }
-  
+}
+
+.delete-button:hover {
+  background-color: #c82333; /* Darker red on hover */
+}
