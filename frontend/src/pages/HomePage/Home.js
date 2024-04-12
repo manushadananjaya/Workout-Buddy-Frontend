@@ -21,7 +21,7 @@ const Home = () => {
     };
 
     fetchWorkouts();
-  }, []);
+  }, [dispatch]);
 
   // console.log(dispatch);
 
