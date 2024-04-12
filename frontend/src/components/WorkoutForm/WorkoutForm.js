@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import styles from './WorkoutForm.module.css'; // Import CSS module
+import { useWorkoutsContext } from '../../hooks/useWorkoutsContext';
 
 const WorkoutForm = () => {
+    const { dispatch } = useWorkoutsContext();
     const [title, setTitle] = useState('');
     const [load, setLoad] = useState('');
     const [reps, setReps] = useState('');
@@ -29,6 +31,7 @@ const WorkoutForm = () => {
             setReps('');
             setError(null);
             console.log('Workout added successfully');
+            dispatch({ type: 'CREATE_WORKOUT', payload: json.workout });
         }
     };
 

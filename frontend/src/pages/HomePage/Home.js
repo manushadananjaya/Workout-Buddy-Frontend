@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import WorkoutForm from "../../components/WorkoutForm/WorkoutForm";
 import WorkoutItem from "../../components/WorkoutItem/WorkoutItem";
 import styles from "./Home.module.css"; // Import CSS module for Home component styles
+import { useWorkoutsContext } from "../../hooks/useWorkoutsContext";
 
 const Home = () => {
-  const [workouts, setWorkouts] = useState(null);
+  // const [workouts, setWorkouts] = useState(null);
+
+  const { workouts, dispatch } = useWorkoutsContext();
 
   useEffect(() => {
     const fetchWorkouts = async () => {
@@ -12,12 +15,15 @@ const Home = () => {
       const json = await response.json();
 
       if (response.ok) {
-        setWorkouts(json.workouts);
+        dispatch({ type: "SET_WORKOUTS", payload: json.workouts });
+        
       }
     };
 
     fetchWorkouts();
   }, []);
+
+  // console.log(dispatch);
 
   return (
     <div className={styles.homeContainer}>
