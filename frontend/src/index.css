@@ -1,0 +1,36 @@
+:root{
+  --primary-color: #007bff;
+  --error:red;
+  --success: green;
+}
+
+body{
+  background: whitesmoke;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+header{
+  background: #fff;
+
+}
+
+header .container{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+header a{
+  text-decoration: none;
+  color: #333;
+}
+
+.pages{
+  max-width: 1400px;
+  padding: 20px;
+  margin: 0 auto;
+}
+
