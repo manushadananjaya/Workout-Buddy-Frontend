@@ -2,20 +2,29 @@ import React from 'react';
 import styles from './WorkoutItem.module.css';
 import { useWorkoutsContext } from '../../hooks/useWorkoutsContext';
 import { formatDistanceToNow } from 'date-fns'; // Import formatDistanceToNow function
+import { useAuthContext } from '../../hooks/useAuthContext';
 
 const WorkoutItem = ({ workout, onDelete }) => {
   const { dispatch } = useWorkoutsContext();
+  const { user } = useAuthContext();
 
   const formattedCreatedAt = formatDistanceToNow(new Date(workout.createdAt), {
     addSuffix: true,
   });
 
   const handleDelete = async () => {
+    if (!user){
+      return;
+    }
     const response = await fetch(`/api/workouts/${workout._id}`, {
       method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json ',
+        'Authorization': `Bearer ${user.token}`
+      },
     });
 
-    const json = await response.json();
+    // const json = await response.json();
     if (response.ok) {
       dispatch({ type: 'DELETE_WORKOUT', payload: workout._id });
     }
