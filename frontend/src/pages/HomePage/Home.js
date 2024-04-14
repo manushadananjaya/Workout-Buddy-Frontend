@@ -3,15 +3,22 @@ import WorkoutForm from "../../components/WorkoutForm/WorkoutForm";
 import WorkoutItem from "../../components/WorkoutItem/WorkoutItem";
 import styles from "./Home.module.css"; // Import CSS module for Home component styles
 import { useWorkoutsContext } from "../../hooks/useWorkoutsContext";
+import { useAuthContext } from "../../hooks/useAuthContext";
 
 const Home = () => {
   // const [workouts, setWorkouts] = useState(null);
 
   const { workouts, dispatch } = useWorkoutsContext();
+  const { user } = useAuthContext();
 
   useEffect(() => {
     const fetchWorkouts = async () => {
-      const response = await fetch("/api/workouts/");
+      const response = await fetch("/api/workouts/",{
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      
+      });
       const json = await response.json();
 
       if (response.ok) {
@@ -20,8 +27,11 @@ const Home = () => {
       }
     };
 
-    fetchWorkouts();
-  }, [dispatch]);
+    if (user){
+      fetchWorkouts();
+    }
+    
+  }, [dispatch, user]);
 
   // console.log(dispatch);
 

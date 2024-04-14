@@ -1,21 +1,30 @@
 import React from 'react';
-import styles from './WorkoutItem.module.css'; // Import CSS module
+import styles from './WorkoutItem.module.css';
 import { useWorkoutsContext } from '../../hooks/useWorkoutsContext';
-
+import { formatDistanceToNow } from 'date-fns'; // Import formatDistanceToNow function
+import { useAuthContext } from '../../hooks/useAuthContext';
 
 const WorkoutItem = ({ workout, onDelete }) => {
   const { dispatch } = useWorkoutsContext();
-  const createdAtDate = new Date(workout.createdAt); // Convert createdAt to a Date object
+  const { user } = useAuthContext();
 
-  // Format date and time string (e.g., "2022-04-15T10:30:00.000Z" => "15-Apr-2022 10:30 AM")
-  const formattedCreatedAt = `${createdAtDate.getDate()}-${createdAtDate.toLocaleString('default', { month: 'short' })}-${createdAtDate.getFullYear()} ${createdAtDate.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}`;
+  const formattedCreatedAt = formatDistanceToNow(new Date(workout.createdAt), {
+    addSuffix: true,
+  });
 
   const handleDelete = async () => {
+    if (!user){
+      return;
+    }
     const response = await fetch(`/api/workouts/${workout._id}`, {
       method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json ',
+        'Authorization': `Bearer ${user.token}`
+      },
     });
 
-    const json = await response.json();
+    // const json = await response.json();
     if (response.ok) {
       dispatch({ type: 'DELETE_WORKOUT', payload: workout._id });
     }
