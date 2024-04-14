@@ -30,7 +30,7 @@ export const useSignup = () => {
         console.log(json);
       } else {
         setIsLoading(false);
-        setError("Signup failed Server error");
+        setError(json.error);
       }
     } catch (error) {
       setError("Signup failed Network error");
