@@ -24,6 +24,7 @@ const Navbar = () => {
   return (
     <Header>
       <ResponsiveContainer>
+       
         <Logo to="/">Workout Buddy</Logo>
         <Nav>
           <NavList>
@@ -36,6 +37,7 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                
                 <NavItem>
                   <NavLink to="/login">Login</NavLink>
                 </NavItem>
