@@ -18,6 +18,7 @@ export const useLogin = () => {
         body: JSON.stringify({ email, password }),
       });
       const json = await response.json();
+      console.log(json);
 
       if (response.ok) {
         //save token to local storage
@@ -30,7 +31,7 @@ export const useLogin = () => {
         console.log(json);
       } else {
         setIsLoading(false);
-        setError("Signup failed Server error");
+        setError(json.error);
       }
     } catch (error) {
       setError("Signup failed Network error");
