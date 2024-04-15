@@ -31,7 +31,7 @@ const WorkoutForm = () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${user.token}`,
+                Authorization: `Bearer ${user.AccessToken}`,
             },
             body: JSON.stringify(workout),
         });

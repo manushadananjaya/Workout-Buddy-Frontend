@@ -19,7 +19,7 @@ const WorkoutItem = ({ workout, onDelete }) => {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${user.token}`,
+        Authorization: `Bearer ${user.AccessToken}`,
       },
     });
 
