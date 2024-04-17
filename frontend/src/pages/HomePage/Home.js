@@ -87,11 +87,8 @@ const Home = () => {
   };
 
   const handleLoginAgain = () => {
-    logout(); // This will log out the user
+    logout(); 
 
-    // Redirect to login page or display a message
-    // For simplicity, here we're just setting loginRequired to false
-    // to demonstrate that the user has logged out and needs to log in again
     setLoginRequired(true);
   };
 
