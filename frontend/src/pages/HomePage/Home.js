@@ -4,92 +4,50 @@ import WorkoutItem from "../../components/WorkoutItem/WorkoutItem";
 import { useWorkoutsContext } from "../../hooks/useWorkoutsContext";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { useLogout } from "../../hooks/useLogout";
+import useTokenRefresh from "../../hooks/useTokenRefresh"; 
 
 const Home = () => {
   const { workouts, dispatch } = useWorkoutsContext();
   const { user } = useAuthContext();
   const { logout } = useLogout();
   const [showWorkoutForm, setShowWorkoutForm] = useState(false);
-  const [loginRequired, setLoginRequired] = useState(false);
+  const { accessToken, error } = useTokenRefresh(user?.RefreshToken); 
 
   useEffect(() => {
-    const refreshAccessToken = async (refreshToken) => {
+    const fetchWorkouts = async (accessToken) => {
       try {
-        const refreshResponse = await fetch("/api/user/refresh", {
-          method: "POST",
+        const response = await fetch("/api/workouts/", {
           headers: {
-            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
-          body: JSON.stringify({
-            RefreshToken: refreshToken,
-          }),
         });
-        const refreshJson = await refreshResponse.json();
-        if (refreshResponse.ok) {
-          dispatch({
-            type: "UPDATE_ACCESS_TOKEN",
-            payload: refreshJson.AccessToken,
-          });
-          setLoginRequired(false);
-          return refreshJson.AccessToken;
+        const json = await response.json();
+
+        if (response.ok) {
+          dispatch({ type: "SET_WORKOUTS", payload: json.workouts });
         } else {
-          console.error("Token refresh failed:", refreshJson.error);
-          setLoginRequired(true);
+          console.error("Fetch workouts failed:", json.error);
         }
-      } catch (refreshError) {
-        console.error("Token refresh request failed:", refreshError);
-        setLoginRequired(true);
-      }
-      return null;
-    };
-
-    const fetchWorkouts = async () => {
-      if (user) {
-        try {
-          const response = await fetch("/api/workouts/", {
-            headers: {
-              Authorization: `Bearer ${user.AccessToken}`,
-            },
-          });
-          const json = await response.json();
-
-          if (response.ok) {
-            dispatch({ type: "SET_WORKOUTS", payload: json.workouts });
-          } else if (json.error === "Token expired" && user.RefreshToken) {
-            const newAccessToken = await refreshAccessToken(user.RefreshToken);
-            if (newAccessToken) {
-              const retryResponse = await fetch("/api/workouts/", {
-                headers: {
-                  Authorization: `Bearer ${newAccessToken}`,
-                },
-              });
-              const retryJson = await retryResponse.json();
-              if (retryResponse.ok) {
-                dispatch({ type: "SET_WORKOUTS", payload: retryJson.workouts });
-              }
-            }
-          }
-        } catch (error) {
-          console.error("Fetch workouts error:", error);
-          setLoginRequired(true);
-        }
+      } catch (error) {
+        console.error("Fetch workouts error:", error);
       }
     };
 
-    fetchWorkouts();
-  }, [dispatch, user]);
+    if (accessToken) {
+      fetchWorkouts(accessToken);
+    }
+  }, [accessToken, dispatch]);
 
   const toggleWorkoutForm = () => {
-    if (loginRequired) {
-      return;
+    if (error) {
+      return; 
     }
     setShowWorkoutForm(!showWorkoutForm);
   };
 
   const handleLoginAgain = () => {
-    logout(); 
-
-    setLoginRequired(true);
+    logout();
+  
   };
 
   return (
@@ -145,7 +103,7 @@ const Home = () => {
         </div>
       )}
 
-      {loginRequired && (
+      {error && (
         <div className="flex justify-center mt-4">
           <p className="text-red-500">
             Session expired. Please{" "}

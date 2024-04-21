@@ -3,6 +3,7 @@ import Input from '../../components/Input';
 import { useWorkoutsContext } from '../../hooks/useWorkoutsContext';
 import { useAuthContext } from '../../hooks/useAuthContext';
 
+
 const WorkoutForm = () => {
     const { dispatch } = useWorkoutsContext();
     const [title, setTitle] = useState('');
