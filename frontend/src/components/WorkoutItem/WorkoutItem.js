@@ -1,30 +1,56 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useWorkoutsContext } from '../../hooks/useWorkoutsContext';
-import { formatDistanceToNow } from 'date-fns'; // Import formatDistanceToNow function
+import { formatDistanceToNow } from 'date-fns';
 import { useAuthContext } from '../../hooks/useAuthContext';
+import useTokenRefresh from '../../hooks/useTokenRefresh';
 
 const WorkoutItem = ({ workout, onDelete }) => {
   const { dispatch } = useWorkoutsContext();
   const { user } = useAuthContext();
+  const { accessToken, error: tokenError, refreshAccessToken } = useTokenRefresh(user?.RefreshToken);
 
   const formattedCreatedAt = formatDistanceToNow(new Date(workout.createdAt), {
     addSuffix: true,
   });
 
+  useEffect(() => {
+    // Automatically refresh access token when component mounts
+    refreshAccessToken();
+  }, [refreshAccessToken]);
+
   const handleDelete = async () => {
     if (!user) {
       return;
     }
-    const response = await fetch(`/api/workouts/${workout._id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${user.AccessToken}`,
-      },
-    });
 
-    if (response.ok) {
-      dispatch({ type: 'DELETE_WORKOUT', payload: workout._id });
+    // Check if access token is expired and refresh it if needed
+    if (!accessToken) {
+      if (tokenError) {
+        console.error('Token refresh failed. Please log in again.');
+        return;
+      } else {
+        console.log('Access token expired. Refreshing...');
+        await refreshAccessToken();
+        return; // Wait for token refresh to complete before deleting workout
+      }
+    }
+
+    try {
+      const response = await fetch(`/api/workouts/${workout._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (response.ok) {
+        dispatch({ type: 'DELETE_WORKOUT', payload: workout._id });
+      } else {
+        console.error('Failed to delete workout.');
+      }
+    } catch (error) {
+      console.error('Failed to delete workout.', error);
     }
   };
 

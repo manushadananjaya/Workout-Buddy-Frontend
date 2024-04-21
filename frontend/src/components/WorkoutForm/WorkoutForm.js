@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Input from '../../components/Input';
 import { useWorkoutsContext } from '../../hooks/useWorkoutsContext';
 import { useAuthContext } from '../../hooks/useAuthContext';
-
+import useTokenRefresh from '../../hooks/useTokenRefresh';
 
 const WorkoutForm = () => {
     const { dispatch } = useWorkoutsContext();
@@ -12,13 +12,24 @@ const WorkoutForm = () => {
     const [error, setError] = useState(null);
     const { user } = useAuthContext();
 
+    const { accessToken, error: tokenError, refreshAccessToken } = useTokenRefresh(user?.RefreshToken);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Input validation
         if (!user) {
             setError('You must be logged in to add a workout');
             return;
+        }
+
+        if (!accessToken) {
+            if (tokenError) {
+                setError('Failed to refresh access token. Please log in again.');
+            } else {
+                setError('Access token expired. Refreshing...');
+                await refreshAccessToken(); // Call refreshAccessToken function from useTokenRefresh hook
+                return; // Wait for token refresh to complete before continuing
+            }
         }
 
         if (!title.trim() || !load || load <= 0 || !reps || reps <= 0) {
@@ -28,26 +39,30 @@ const WorkoutForm = () => {
 
         const workout = { title, load: Number(load), reps: Number(reps) };
 
-        const response = await fetch('/api/workouts/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${user.AccessToken}`,
-            },
-            body: JSON.stringify(workout),
-        });
+        try {
+            const response = await fetch('/api/workouts/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify(workout),
+            });
 
-        const json = await response.json();
+            const json = await response.json();
 
-        if (!response.ok) {
-            setError(json.error);
-        } else {
-            setTitle('');
-            setLoad('');
-            setReps('');
-            setError(null);
-            console.log('Workout added successfully');
-            dispatch({ type: 'CREATE_WORKOUT', payload: json.workout });
+            if (!response.ok) {
+                setError(json.error || 'Failed to add workout. Please try again.');
+            } else {
+                setTitle('');
+                setLoad('');
+                setReps('');
+                setError(null);
+                console.log('Workout added successfully');
+                dispatch({ type: 'CREATE_WORKOUT', payload: json.workout });
+            }
+        } catch (error) {
+            setError('Failed to add workout. Please try again.');
         }
     };
 
