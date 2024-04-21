@@ -3,33 +3,51 @@ import WorkoutForm from "../../components/WorkoutForm/WorkoutForm";
 import WorkoutItem from "../../components/WorkoutItem/WorkoutItem";
 import { useWorkoutsContext } from "../../hooks/useWorkoutsContext";
 import { useAuthContext } from "../../hooks/useAuthContext";
+import { useLogout } from "../../hooks/useLogout";
+import useTokenRefresh from "../../hooks/useTokenRefresh"; 
 
 const Home = () => {
   const { workouts, dispatch } = useWorkoutsContext();
   const { user } = useAuthContext();
+  const { logout } = useLogout();
   const [showWorkoutForm, setShowWorkoutForm] = useState(false);
+  const { accessToken, error } = useTokenRefresh(user?.RefreshToken); 
 
   useEffect(() => {
-    const fetchWorkouts = async () => {
-      if (user) {
+    const fetchWorkouts = async (accessToken) => {
+      try {
         const response = await fetch("/api/workouts/", {
           headers: {
-            Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         });
         const json = await response.json();
 
         if (response.ok) {
           dispatch({ type: "SET_WORKOUTS", payload: json.workouts });
+        } else {
+          console.error("Fetch workouts failed:", json.error);
         }
+      } catch (error) {
+        console.error("Fetch workouts error:", error);
       }
     };
 
-    fetchWorkouts();
-  }, [dispatch, user]);
+    if (accessToken) {
+      fetchWorkouts(accessToken);
+    }
+  }, [accessToken, dispatch]);
 
   const toggleWorkoutForm = () => {
+    if (error) {
+      return; 
+    }
     setShowWorkoutForm(!showWorkoutForm);
+  };
+
+  const handleLoginAgain = () => {
+    logout();
+  
   };
 
   return (
@@ -46,7 +64,6 @@ const Home = () => {
         )}
       </div>
 
-      {/* Display workout items in a vertical list */}
       <div>
         {workouts &&
           workouts.map((workout) => (
@@ -56,7 +73,6 @@ const Home = () => {
           ))}
       </div>
 
-      {/* Modal for adding a workout */}
       {showWorkoutForm && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg">
@@ -84,6 +100,21 @@ const Home = () => {
             </div>
             <WorkoutForm />
           </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="flex justify-center mt-4">
+          <p className="text-red-500">
+            Session expired. Please{" "}
+            <span
+              onClick={handleLoginAgain}
+              className="underline cursor-pointer text-blue-500 hover:text-blue-700"
+            >
+              log in again
+            </span>
+            .
+          </p>
         </div>
       )}
     </div>
